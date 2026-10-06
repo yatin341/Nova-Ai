@@ -1,0 +1,7 @@
+groq
+requests
+magic-hour
+torch
+transformers
+python-dotenv
+scipy
