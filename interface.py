@@ -11,9 +11,7 @@ from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-import main  # your existing file (loads MusicGen, Groq, Cloudflare, Magic Hour)
-#8001
-#python -m uvicorn interface:app --host 127.0.0.1 --port 8001
+import main  
 
 BASE = Path(__file__).parent
 OUT, UPLOADS, FRONTEND = BASE / "outputs", BASE / "uploads", BASE / "frontend"
