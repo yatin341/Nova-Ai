@@ -10,6 +10,8 @@ from transformers import AutoProcessor, MusicgenForConditionalGeneration
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
+
+
 #musicgen setup
 MUSICGEN_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -47,6 +49,8 @@ URL = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/run/{MODEL
 groq_client = Groq(
     api_key= os.getenv("GROQ_API_KEY")
 )
+
+
 
 
 #generate a music
@@ -457,7 +461,7 @@ IMPORTANT LANGUAGE RULES:
 1. Detect the language used by the user.
 2. Reply in the same language as the user.
 3. Support multilingual conversations.
-4. If the user speaks Hindi, reply in Hindi.
+
 5. If the user speaks Hindi using English/Roman letters,
    reply in Roman Hindi.
 6. If the user speaks English, reply in English.
@@ -577,7 +581,7 @@ def proccess(command):
        
             
               current_time = time.strftime("%I:%M %p")
-              print(f"The current time is {current_time}") 
+              return(f"The current time is {current_time}") 
 
        elif (
            command.startswith ("generate a photo")
@@ -693,14 +697,15 @@ def proccess(command):
 
        else:
             output = aiprocess(command)
-            print(output)                     
+            print(output)       
+
+
+#------------------------------------frontend-------------------------------
 
 
 if __name__ == "__main__":
 
-     
-      print("===========Ai is activated==========")
-
+ 
       while True:
 
             start = time.time()
@@ -709,3 +714,4 @@ if __name__ == "__main__":
 
             proccess(ask_question)
             print("total time taken to answer:", round(time.time() - start, 2), "seconds")
+ 
