@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nova AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <span class="brand-name">Nova</span>
+    </div>
+    <button class="new-chat" id="newChat">New chat</button>
+
+    <p class="side-title">Create</p>
+    <nav class="tools">
+      <button data-mode="image"><span class="ic">🎨</span>Generate image</button>
+      <button data-mode="video"><span class="ic">🎬</span>Generate video</button>
+      <button data-mode="music"><span class="ic">🎵</span>Generate music</button>
+    </nav>
+    <p class="side-title">Edit</p>
+    <nav class="tools">
+      <button data-mode="edit-image"><span class="ic">✨</span>Edit image</button>
+      <button data-mode="animate"><span class="ic">📷</span>Animate photo</button>
+      <button data-mode="edit-video"><span class="ic">✂️</span>Edit video</button>
+    </nav>
+    <p class="side-title">Quick info</p>
+    <nav class="tools">
+      <button data-mode="weather"><span class="ic">⛅</span>Weather</button>
+      <button data-quick="what time is it"><span class="ic">🕒</span>Current time</button>
+    </nav>
+    <p class="status"><span class="dot" id="statusDot"></span><span id="statusText">Connecting…</span></p>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn menu" id="menuBtn" aria-label="Open menu">☰</button>
+      <h1>Nova AI</h1>
+      <button class="icon-btn" id="clearBtn" aria-label="Clear chat" title="Clear chat">🗑</button>
+    </header>
+
+    <section class="chat" id="chat" aria-live="polite">
+      <div class="welcome" id="welcome">
+        <div class="orb" aria-hidden="true"></div>
+        <h2>What should we make today?</h2>
+        <p>Ask a question, or pick a tool to create and edit images, video and music.</p>
+        <div class="tiles">
+          <button data-mode="image"><b>Generate an image</b><span>Describe it, Nova draws it</span></button>
+          <button data-mode="edit-image"><b>Edit a photo</b><span>Change background, light or style</span></button>
+          <button data-mode="animate"><b>Animate a photo</b><span>Turn a still into a 5s clip</span></button>
+          <button data-mode="music"><b>Make music</b><span>Write a mood, get a track</span></button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="composer-wrap">
+      <div class="composer" id="dropzone">
+        <div class="mode-pill" id="modePill" hidden>
+          <span id="modeLabel"></span>
+          <button id="modeClear" aria-label="Remove tool">×</button>
+        </div>
+        <div class="preview" id="preview" hidden></div>
+        <div class="row">
+          <label class="icon-btn attach" title="Add photo or video">
+            <input type="file" id="fileInput" accept="image/*,video/*" hidden>
+            📎
+          </label>
+          <textarea id="input" rows="1" placeholder="Message Nova…" aria-label="Message"></textarea>
+          <button class="send" id="sendBtn" aria-label="Send">Send</button>
+        </div>
+      </div>
+      <p class="hint">Enter to send · Shift+Enter for a new line · drop a photo or video anywhere</p>
+    </footer>
+  </main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="script.js"></script>
+</body>
+</html>
