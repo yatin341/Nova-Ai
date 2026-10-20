@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-
 #musicgen setup
 MUSICGEN_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
