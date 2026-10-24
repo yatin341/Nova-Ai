@@ -487,6 +487,7 @@ def proccess(command):
              print("yes tell me your city ")
              weather()
 
+    
        elif command.lower().strip() in [
                 "time",
                 "what time is it",
