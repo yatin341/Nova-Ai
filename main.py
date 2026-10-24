@@ -5,28 +5,9 @@ import time
 import requests
 import base64
 from magic_hour import Client
-import torch
-from transformers import AutoProcessor, MusicgenForConditionalGeneration
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-
-#musicgen setup
-MUSICGEN_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-print("Loading MusicGen...")
-print("Device:", MUSICGEN_DEVICE)
-
-music_processor = AutoProcessor.from_pretrained(
-    "facebook/musicgen-small"
-)
-
-music_model = MusicgenForConditionalGeneration.from_pretrained(
-    "facebook/musicgen-small"
-).to(MUSICGEN_DEVICE)
-
-print("MusicGen loaded successfully!")
-
 
 #video api key client
 client = Client(
@@ -50,72 +31,6 @@ groq_client = Groq(
 )
 
 
-
-
-#generate a music
-
-def generate_music(prompt):
-    try:
-        print("Generating music...")
-        print("Prompt:", prompt)
-
-        inputs = music_processor(
-            text=[prompt],
-            padding=True,
-            return_tensors="pt"
-        ).to(MUSICGEN_DEVICE)
-
-        audio_values = music_model.generate(
-            **inputs,
-            max_new_tokens=512
-        )
-
-        audio_values = audio_values[0].cpu().numpy()
-
-        import scipy.io.wavfile
-
-        scipy.io.wavfile.write(
-            "generated_music.wav",
-            rate=music_model.config.audio_encoder.sampling_rate,
-            data=audio_values.T
-        )
-
-        print("Music generated successfully!")
-        print("Saved as: generated_music.wav")
-
-    except Exception as e:
-        print("Music generation error:", e)
-
-  
-
-# to generate video
-def generate_video(prompt):
-
-    print("\n🎬 Generating video...")
-    print("Prompt:", prompt)
-
-    try:
-        res = client.v1.text_to_video.generate(
-            name="My AI Video",
-            end_seconds=5,
-            aspect_ratio="16:9",
-            resolution="480p",
-            style={
-                "prompt": prompt
-            },
-            wait_for_completion=True,
-            download_outputs=True,
-            download_directory="."
-        )
-
-        print("✅ Video generated successfully!")
-        print("📁 Check the current folder for the video.")
-
-        return res
-
-    except Exception as e:
-        print("❌ Video generation error:")
-        print(e)
 
 
 # to animate photo
@@ -666,34 +581,9 @@ def proccess(command):
                      edit_image(command)
 
        elif command.startswith("edit my image"):
-                            edit_image(command)              
-
-       elif(
-           command.startswith("generate a music")
-           or command.startswith("make a music")
-           or command.startswith("generate a song")
-           or command.startswith("make a song") 
-       ): 
-            if command.startswith("generate a music"):
-                 prompt = command.replace("generate a music", "", 1).strip()
-
-            elif command.startswith("make a music"):
-                 prompt = command.replace("make a music", "", 1).strip()
-
-            elif command.startswith("generate a song"):
-                 prompt = command.replace("generate a song", "", 1).strip()
-
-            elif command.startswith("make a song"):
-                  prompt = command.replace("make a song", "", 1).strip()
-
-            if prompt:
-                 generate_music(prompt)
-
-            else:
-                  print("Please tell me what music you want to generate.")                        
+                            edit_image(command)                                 
              
        
-
        else:
             output = aiprocess(command)
             print(output)       
