@@ -106,50 +106,6 @@ Change the visual style of this video
 
 The edited video is generated through Magic Hour.
 
-🎵 AI Music Generation
-
-Nova AI includes local AI music generation using Meta's MusicGen Small model.
-
-Music generation runs locally using:
-
-MusicGen Small
-Hugging Face Transformers
-PyTorch
-CUDA GPU acceleration when available
-SciPy for WAV file creation
-
-Example:
-
-Generate a relaxing piano music
-Generate an energetic cinematic background music
-
-The generated audio is saved as:
-
-generated_music.wav
-
-Because MusicGen runs locally, music generation does not require sending the music prompt to a separate hosted music-generation API.
-
-⚡ GPU Acceleration
-
-Nova AI automatically checks whether CUDA is available.
-
-If an NVIDIA GPU is available:
-
-CUDA
-
-is used for MusicGen.
-
-Otherwise, the model falls back to:
-
-CPU
-
-The application automatically detects the available device.
-
-Example startup information:
-
-Loading MusicGen...
-Device: cuda
-MusicGen loaded successfully!
 🌦️ Weather Information
 
 Nova AI can retrieve weather information using wttr.in.
