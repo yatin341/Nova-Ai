@@ -11,13 +11,13 @@ from zoneinfo import ZoneInfo
 
 load_dotenv(override=True)
 
-#video api key client
+# video api key client
 client = Client(
     token=os.getenv("MAGIC_HOUR_API_KEY")
-) 
+)
 
-#CLOUDFLARE_ACCOUNT_ID
-#CLOUDFLARE_API_TOKEN
+# CLOUDFLARE_ACCOUNT_ID
+# CLOUDFLARE_API_TOKEN
 ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
 API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")
 
@@ -26,17 +26,13 @@ MODEL = "@cf/black-forest-labs/flux-2-klein-4b"
 URL = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/run/{MODEL}"
 
 
-
-#groq api client
+# groq api client
 groq_client = Groq(
-    api_key= os.getenv("GROQ_API_KEY")
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 
-
-
 # to animate photo
-
 def animate_image():
     image_path = input("\n📷 Enter image path: ").strip()
     image_path = image_path.strip('"').strip("'")
@@ -72,7 +68,6 @@ def animate_image():
     except Exception as e:
         print("❌ Image-to-video error:")
         print(e)
-
 
 
 # to edit video
@@ -117,63 +112,62 @@ def edit_video():
 
     except Exception as e:
         print("❌ Video editing error:")
-        print(e)                
+        print(e)
 
 
 # to generate image
 def generate_image(prompt):
+    try:
+        print("\n🎨 Generating image...")
+        print("Prompt:", prompt)
+        print("Please wait...\n")
 
-  try:
+        headers = {
+            "Authorization": f"Bearer {API_TOKEN}"
+        }
 
-    print("\n🎨 Generating image...")
-    print("Prompt:", prompt)
-    print("Please wait...\n")
+        files = {
+            "prompt": (None, prompt),
+            "width": (None, "1024"),
+            "height": (None, "1024")
+        }
 
-    headers = {
-        "Authorization": f"Bearer {API_TOKEN}"
-    }
+        response = requests.post(
+            URL,
+            headers=headers,
+            files=files,
+            timeout=120
+        )
 
-    files = {
-        "prompt": (None, prompt),
-        "width": (None, "1024"),
-        "height": (None, "1024")
-    }
+        if response.status_code != 200:
+            print("❌ Image generation error:")
+            print(response.text)
+            return None
 
-    response = requests.post(
-        URL,
-        headers=headers,
-        files=files,
-        timeout=120
-    )
+        result = response.json()
 
-    if response.status_code != 200:
-        print("❌ Image generation error:")
-        print(response.text)
+        image_base64 = result["result"]["image"]
+
+        image_bytes = base64.b64decode(image_base64)
+
+        output_path = "generated_image.png"
+
+        with open(output_path, "wb") as f:
+            f.write(image_bytes)
+
+        print("✅ Image generated successfully!")
+        print("Saved at:", os.path.abspath(output_path))
+
+        return output_path
+
+    except Exception as e:
+        print("❌ Image generation error:", e)
         return None
-
-    result = response.json()
-
-    image_base64 = result["result"]["image"]
-
-    image_bytes = base64.b64decode(image_base64)
-
-    output_path = "generated_image.png"
-
-    with open(output_path, "wb") as f:
-        f.write(image_bytes)
-
-    print("✅ Image generated successfully!")
-    print("Saved at:", os.path.abspath(output_path))
-
-    return output_path
-  except Exception as e:
-       print("❌ Image generation error:", e)
-       return None
 
 
 # to edit image with ai
 def ai_edit_image(image_path, edit_command):
-     # Remove quotes if user pastes "path"
+    # Remove quotes if user pastes "path"
     image_path = image_path.strip().strip('"').strip("'")
 
     # Check image
@@ -190,7 +184,6 @@ def ai_edit_image(image_path, edit_command):
 
     try:
         with open(image_path, "rb") as image_file:
-
             files = {
                 "input_image_0": (
                     os.path.basename(image_path),
@@ -239,44 +232,31 @@ def ai_edit_image(image_path, edit_command):
         print(e)
         return None
 
-   
-
 
 def edit_image(command):
     print("""Sure—upload the photo and tell me what you want changed
      (e.g. background, lighting, hairstyle, clothes, body proportions,
     cinematic look, remove something, or make it Instagram-style).""")
 
-
-
     image_path = input("Enter the image path: ").strip()
 
     # Remove quotes if user pasted:
     image_path = image_path.strip('"').strip("'")
 
-
     # Check image
     if not os.path.exists(image_path):
-
         print("Image file not found!")
-
         return
 
-
     print("Image found successfully!")
-
 
     edit_command = input(
         "What do you want to change?\n> "
     ).strip()
 
-
     if not edit_command:
-
         print("Please enter an editing instruction.")
-
         return
-
 
     # Call AI image editor
     edited_image = ai_edit_image(
@@ -284,49 +264,46 @@ def edit_image(command):
         edit_command
     )
 
-
     if edited_image:
-
         print(f"\nYour edited image is here:")
         print(os.path.abspath(edited_image))
 
 
-#  weather 
-def weather():    
-         city = input("tell me which city or which country :- ")
+# weather
+def weather():
+    city = input("tell me which city or which country :- ")
 
-         url = f"https://wttr.in/{city}?format=j1"
-         try:
-     
-             response = requests.get(url,timeout=10)
-             response.raise_for_status()
+    url = f"https://wttr.in/{city}?format=j1"
 
-             data = response.json()
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
 
-             temperature = data["current_condition"][0]["temp_C"]
+        data = response.json()
 
-             print(f"The temperature in {city} is {temperature}°C")
+        temperature = data["current_condition"][0]["temp_C"]
 
-         except Exception as e: 
-            print("Weather error:", e) 
+        print(f"The temperature in {city} is {temperature}°C")
 
-         
+    except Exception as e:
+        print("Weather error:", e)
 
 
 # to store history
-
 HISTORY_FILE = "history.json"
+
 
 def save_history(user_message, ai_response):
     history = []
 
     if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as file:
+                history = json.load(file)
 
-     try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as file:
-            history = json.load(file)
-     except (json.JSONDecodeError, OSError):
-           history = []
+        except (json.JSONDecodeError, OSError):
+            history = []
+
     history.append({
         "user": user_message,
         "AI": ai_response
@@ -337,7 +314,6 @@ def save_history(user_message, ai_response):
 
 
 # ai prompt
-
 conversation_history = [
     {
         "role": "system",
@@ -348,15 +324,15 @@ If the user asks something related to a previous question,
 use the previous conversation context.
 Give short, natural answers, usually 1-3 sentences.
 If the user changes the topic, answer the new topic normally.
-Do not use markdown.Do not give unnecessary explanations. and always explain like every normal humans can understand. 
+Do not use markdown.Do not give unnecessary explanations. and always explain like every normal humans can understand.
 if user  ask about you, tell them that your are a ai assistant and you can help them in variours problems. always respect the user.
-if user ask how are you tell them you are fine and ask them how can i help you. 
+if user ask how are you tell them you are fine and ask them how can i help you.
 write properly .if user talk with you talk with the user and
-talk friendly. if user ask for any advice give your best advise to user.  if user ask you what 
-are you doing reply them that your are helping the user. 
+talk friendly. if user ask for any advice give your best advise to user.  if user ask you what
+are you doing reply them that your are helping the user.
 always remember what user ask to you Remember the conversation and use previous messages to understand follow-up questions.
 If the user asks something related to a previous question, use the previous context.
-If the user changes the topic, answer the new topic normally. 
+If the user changes the topic, answer the new topic normally.
 
 If the user's question depends on current or recent information,
 use web search when available instead of relying on your stored knowledge.
@@ -400,214 +376,202 @@ User: ¿Cómo estás?
 Assistant: ¡Estoy muy bien! ¿Cómo puedo ayudarte?
 """
     }
-]  
+]
 
 
 MAX_EXCHANGES = 10
 
-#Ai 
-
+# AI
 def aiprocess(command):
-                global conversation_history
-                try:
+    global conversation_history
+
+    try:
         # Add user's question
-                  conversation_history.append({
-                 "role": "user",
-                 "content": command
-                  })
+        conversation_history.append({
+            "role": "user",
+            "content": command
+        })
 
         # Send conversation history to Groq
-                  response = groq_client.chat.completions.create(
-                  model="openai/gpt-oss-20b",
-                 messages= conversation_history,
-                 
-                  tools=[
+        response = groq_client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=conversation_history,
+
+            tools=[
                 {
                     "type": "browser_search"
                 }
             ],
-                   
-                  tool_choice="auto",
-            
 
-                  max_completion_tokens=2048
+            tool_choice="auto",
+            max_completion_tokens=2048
+        )
 
-                  )
-                  
+        # Get AI answer
+        answer = response.choices[0].message.content
 
-        # Get Ai answer
-                  answer = response.choices[0].message.content
-                
+        # Save AI answer
+        conversation_history.append({
+            "role": "assistant",
+            "content": answer
+        })
 
-        # Save Ai  answer
-                  conversation_history.append({
-                  "role": "assistant",
-                 "content": answer
-                  })
-                  save_history(command, answer)
+        save_history(command, answer)
 
         # Keep only last 10 exchanges
-                  if len(conversation_history) > (MAX_EXCHANGES * 2) + 1:
-                    conversation_history = (
-                  [conversation_history[0]]
-                  + conversation_history[-(MAX_EXCHANGES * 2):]
-                 )  
-                  return answer
-        
-                except Exception as e:
-                  print(f"{e}")
-                  return f"Groq error: {e}"
+        if len(conversation_history) > (MAX_EXCHANGES * 2) + 1:
+            conversation_history = (
+                [conversation_history[0]]
+                + conversation_history[-(MAX_EXCHANGES * 2):]
+            )
 
-                
+        return answer
+
+    except Exception as e:
+        print(f"{e}")
+        return f"Groq error: {e}"
+
+
 waiting_for_image_prompt = False
 waiting_for_video_prompt = False
 
+
 def proccess(command):
-       global waiting_for_video_prompt
-       global waiting_for_image_prompt
+    global waiting_for_video_prompt
+    global waiting_for_image_prompt
 
-     
-       command = command.lower().strip()
+    command = command.lower().strip()
 
-       if waiting_for_image_prompt:
-            waiting_for_image_prompt = False
+    if waiting_for_image_prompt:
+        waiting_for_image_prompt = False
 
-            print("🎨 Generating your image...")
-            generate_image(command)
-            return
+        print("🎨 Generating your image...")
+        generate_image(command)
+        return
 
-       if waiting_for_video_prompt:
-            waiting_for_video_prompt = False
+    if waiting_for_video_prompt:
+        waiting_for_video_prompt = False
 
-            print("🎬 Generating your video...")
-            generate_video(command)
-            return
-            
-       if "weather" in command or command.startswith("temperature in "):
-             print("yes tell me your city ")
-             weather()
+        print("🎬 Generating your video...")
+        generate_video(command)
+        return
 
-    
-       elif command.lower().strip() in [
-                "time",
-                "what time is it",
-                "what's the time",
-                "what is the time",
-                "current time",
-                "tell me the time",
-                "what time is it right now",
-                "tell me the current time"
-           ]:
-             current_time = datetime.now(
-             ZoneInfo("Asia/Kolkata")
-             ).strftime("%I:%M %p")
+    if "weather" in command or command.startswith("temperature in "):
+        print("yes tell me your city ")
+        weather()
 
-           return f"The current time in India is {current_time}."
+    elif command.lower().strip() in [
+        "time",
+        "what time is it",
+        "what's the time",
+        "what is the time",
+        "current time",
+        "tell me the time",
+        "what time is it right now",
+        "tell me the current time"
+    ]:
+        current_time = datetime.now(
+            ZoneInfo("Asia/Kolkata")
+        ).strftime("%I:%M %p")
 
-       elif (
-           command.startswith ("generate a photo")
-           or command.startswith("generate an image")
-           or command.startswith("create an image")
-           or command.startswith("make an image")
-       ):
-            if command.startswith("generate a photo"):
-                 prompt = command.replace("generate a photo", "", 1).strip()
+        return f"The current time in India is {current_time}."
 
-            elif command.startswith("generate an image"):
-                 prompt = command.replace("generate an image", "", 1).strip()     
+    elif (
+        command.startswith("generate a photo")
+        or command.startswith("generate an image")
+        or command.startswith("create an image")
+        or command.startswith("make an image")
+    ):
+        if command.startswith("generate a photo"):
+            prompt = command.replace("generate a photo", "", 1).strip()
 
-            elif command.startswith("create an image"):
-                 prompt = command.replace("create an image", "", 1).strip()
+        elif command.startswith("generate an image"):
+            prompt = command.replace("generate an image", "", 1).strip()
 
-            elif command.startswith("make an image"):
-                 prompt = command.replace("make an image", "", 1).strip()   
+        elif command.startswith("create an image"):
+            prompt = command.replace("create an image", "", 1).strip()
 
-            if prompt:
-                 generate_image(prompt)   
+        elif command.startswith("make an image"):
+            prompt = command.replace("make an image", "", 1).strip()
 
-            else:
-                 waiting_for_image_prompt = True
-                 print("Please tell me what image you want to generate.")
+        if prompt:
+            generate_image(prompt)
 
-       elif( 
-           command.startswith("generate a video")
-           or command.startswith("make a video")
-           or command.startswith("create a video")
-           or command.startswith("generate video")
-       ):
+        else:
+            waiting_for_image_prompt = True
+            print("Please tell me what image you want to generate.")
 
-           if command.startswith("generate a video"):
-               prompt = command.replace("generate a video", "" , 1).strip()
+    elif (
+        command.startswith("generate a video")
+        or command.startswith("make a video")
+        or command.startswith("create a video")
+        or command.startswith("generate video")
+    ):
+        if command.startswith("generate a video"):
+            prompt = command.replace("generate a video", "", 1).strip()
 
-           elif command.startswith("make a video"):
-               prompt = command.replace("make a video", "" , 1).strip()
+        elif command.startswith("make a video"):
+            prompt = command.replace("make a video", "", 1).strip()
 
-           elif command.startswith("create a video"):
-               prompt = command.replace("create a video", "" , 1).strip()
+        elif command.startswith("create a video"):
+            prompt = command.replace("create a video", "", 1).strip()
 
-           elif command.startswith("generate video"):
-               prompt = command.replace("generate video", "" , 1).strip()
+        elif command.startswith("generate video"):
+            prompt = command.replace("generate video", "", 1).strip()
 
-           if prompt:
-               generate_video(prompt)
+        if prompt:
+            generate_video(prompt)
 
-           else:
-               waiting_for_video_prompt = True
-               print("tell me what video you want to generate")
+        else:
+            waiting_for_video_prompt = True
+            print("tell me what video you want to generate")
 
+    elif (
+        command.startswith("animate this photo")
+        or command.startswith("animate photo")
+        or command.startswith("animate this image")
+        or command.startswith("animate image")
+    ):
+        animate_image()
+        return
 
-       elif(
-           command.startswith("animate this photo")
-           or command.startswith("animate photo")
-           or command.startswith("animate this image")
-           or command.startswith("animate image")
-       ):     
+    elif (
+        command.startswith("edit this video")
+        or command.startswith("edit video")
+        or command.startswith("edit my video")
+    ):
+        edit_video()
+        return
 
-           animate_image()
-           return
+    elif command.startswith("edit this image"):
+        edit_image(command)
 
+    elif command.startswith("edit this photo"):
+        edit_image(command)
 
-       elif(
-           command.startswith("edit this video")
-           or command.startswith("edit video")
-           or command.startswith("edit my video")
-       ):
-           edit_video()
-           return     
-   
+    elif command.startswith("edit my photo"):
+        edit_image(command)
 
-       
+    elif command.startswith("edit my image"):
+        edit_image(command)
 
-       elif command.startswith("edit this image"):
-              edit_image(command)
-
-       elif command.startswith("edit this photo"):
-               edit_image(command)
-
-       elif command.startswith("edit my photo"):
-                     edit_image(command)
-
-       elif command.startswith("edit my image"):
-                            edit_image(command)                                 
-             
-       
-       else:
-            output = aiprocess(command)
-            print(output)       
+    else:
+        output = aiprocess(command)
+        print(output)
 
 
-#------------------------------------frontend-------------------------------
-
+# ------------------------------------frontend-------------------------------
 
 if __name__ == "__main__":
+    while True:
+        start = time.time()
+        print("Ai look around:", round(time.time() - start, 2), "seconds")
+        ask_question = input("ask question:- ")
 
- 
-      while True:
+        proccess(ask_question)
 
-            start = time.time()
-            print("Ai look around:", round(time.time() - start, 2), "seconds")
-            ask_question = input("ask question:- ")
-
-            proccess(ask_question)
-            print("total time taken to answer:", round(time.time() - start, 2), "seconds")
- 
+        print(
+            "total time taken to answer:",
+            round(time.time() - start, 2),
+            "seconds"
+        )
