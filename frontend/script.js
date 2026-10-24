@@ -1,20 +1,22 @@
-/* ===== Nova AI frontend ===== */
+
+/* ===== Nova AI Frontend ===== */
 
 const CONFIG = {
+    // Uses the same Render domain as the frontend and FastAPI backend.
     API_BASE: window.location.origin,
     DEMO_MODE: false
 };
 
 const MODES = {
-    image: {
+    "image": {
         label: "Generate image",
         ph: "Describe the image you want…"
     },
-    video: {
+    "video": {
         label: "Generate video",
         ph: "Describe the video you want…"
     },
-    music: {
+    "music": {
         label: "Generate music",
         ph: "Describe the music, e.g. calm lo-fi piano…"
     },
@@ -23,7 +25,7 @@ const MODES = {
         ph: "What should change in the photo?",
         file: "image"
     },
-    animate: {
+    "animate": {
         label: "Animate photo",
         ph: "What movement should I add?",
         file: "image"
@@ -33,7 +35,7 @@ const MODES = {
         ph: "What should change in the video?",
         file: "video"
     },
-    weather: {
+    "weather": {
         label: "Weather",
         ph: "Which city or country?"
     }
@@ -51,19 +53,7 @@ let mode = null;
 let file = null;
 let busy = false;
 
-/* ---------- URL helpers ---------- */
-
-function abs(url) {
-    if (!url) return "";
-
-    if (/^(https?:|blob:|data:)/i.test(url)) {
-        return url;
-    }
-
-    return new URL(url, CONFIG.API_BASE).href;
-}
-
-/* ---------- helpers ---------- */
+/* ---------- Helpers ---------- */
 
 const scrollDown = () => {
     chat.scrollTo({
@@ -101,6 +91,7 @@ function addMedia(bubble, type, url) {
     const wrap = document.createElement("div");
     wrap.className = "media";
 
+    const mediaUrl = resolveUrl(url);
     let element;
 
     if (type === "image") {
@@ -115,17 +106,36 @@ function addMedia(bubble, type, url) {
         element.controls = true;
     }
 
-    element.src = abs(url);
-    element.addEventListener("load", scrollDown);
-    element.addEventListener("loadeddata", scrollDown);
+    element.src = mediaUrl;
 
     const download = document.createElement("a");
-    download.href = abs(url);
+    download.href = mediaUrl;
     download.download = "";
     download.textContent = "Download";
+    download.target = "_blank";
+    download.rel = "noopener";
 
     wrap.append(element, download);
     bubble.append(wrap);
+
+    element.addEventListener("load", scrollDown);
+    element.addEventListener("loadeddata", scrollDown);
+
+    element.addEventListener("error", () => {
+        console.error("Failed to load generated media:", mediaUrl);
+    });
+}
+
+function resolveUrl(url) {
+    if (!url) return "";
+
+    // Keep absolute URLs and local preview URLs unchanged.
+    if (/^(https?:|blob:|data:)/i.test(url)) {
+        return url;
+    }
+
+    // Correctly handles paths such as /files/generated.wav.
+    return new URL(url, CONFIG.API_BASE).href;
 }
 
 function showTyping() {
@@ -137,7 +147,11 @@ function showTyping() {
     return bubble.parentElement;
 }
 
-/* ---------- modes and files ---------- */
+function showError(message) {
+    addMessage("ai", message, { error: true });
+}
+
+/* ---------- Modes and Files ---------- */
 
 function setMode(key) {
     mode = key;
@@ -152,9 +166,12 @@ function setMode(key) {
     });
 
     const pill = $("modePill");
-    pill.hidden = !key;
 
-    if (key) {
+    if (pill) {
+        pill.hidden = !key;
+    }
+
+    if (key && MODES[key]) {
         $("modeLabel").textContent = MODES[key].label;
         input.placeholder = MODES[key].ph;
 
@@ -170,34 +187,36 @@ function setMode(key) {
 }
 
 function setFile(selectedFile) {
-    if (file && preview.querySelector("img, video")) {
-        const oldUrl = preview.querySelector("img, video").src;
-
-        if (oldUrl.startsWith("blob:")) {
-            URL.revokeObjectURL(oldUrl);
-        }
+    // Release an existing preview URL if present.
+    if (preview.dataset.objectUrl) {
+        URL.revokeObjectURL(preview.dataset.objectUrl);
+        delete preview.dataset.objectUrl;
     }
 
     file = selectedFile;
+
     preview.innerHTML = "";
     preview.hidden = !selectedFile;
 
     if (!selectedFile) return;
 
     const url = URL.createObjectURL(selectedFile);
+    preview.dataset.objectUrl = url;
 
-    const element = selectedFile.type.startsWith("video/")
-        ? document.createElement("video")
-        : new Image();
+    let element;
+
+    if (selectedFile.type.startsWith("video/")) {
+        element = document.createElement("video");
+        element.muted = true;
+        element.playsInline = true;
+    } else {
+        element = new Image();
+    }
 
     element.src = url;
 
-    if (element.tagName === "VIDEO") {
-        element.muted = true;
-        element.controls = true;
-    }
-
     const removeButton = document.createElement("button");
+    removeButton.type = "button";
     removeButton.textContent = "×";
     removeButton.setAttribute("aria-label", "Remove file");
 
@@ -210,12 +229,14 @@ function setFile(selectedFile) {
 }
 
 fileInput.addEventListener("change", () => {
-    if (fileInput.files[0]) {
-        setFile(fileInput.files[0]);
+    const selectedFile = fileInput.files?.[0];
+
+    if (selectedFile) {
+        setFile(selectedFile);
     }
 });
 
-/* ---------- drag and drop ---------- */
+/* ---------- Drag and Drop ---------- */
 
 const dropzone = $("dropzone");
 
@@ -234,24 +255,26 @@ const dropzone = $("dropzone");
 });
 
 document.addEventListener("drop", (event) => {
-    const selectedFile = event.dataTransfer.files[0];
+    const selectedFile = event.dataTransfer?.files?.[0];
 
     if (
         selectedFile &&
-        /^(image|video)\//.test(selectedFile.type)
+        /^(image|video)\//i.test(selectedFile.type)
     ) {
         setFile(selectedFile);
     }
 });
 
+/* ---------- Mode Buttons ---------- */
+
 document.querySelectorAll("[data-mode]").forEach((element) => {
     element.addEventListener("click", () => {
-        const key = element.dataset.mode;
+        const clickedMode = element.dataset.mode;
 
         setMode(
-            mode === key && element.closest(".tools")
+            mode === clickedMode && element.closest(".tools")
                 ? null
-                : key
+                : clickedMode
         );
     });
 });
@@ -265,7 +288,7 @@ document.querySelectorAll("[data-quick]").forEach((element) => {
     });
 });
 
-/* ---------- API requests ---------- */
+/* ---------- API Requests ---------- */
 
 async function callApi(formData) {
     const response = await fetch(
@@ -277,42 +300,24 @@ async function callApi(formData) {
     );
 
     if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-    }
+        let details = "";
 
-    return response.json();
-}
-
-async function checkHealth() {
-    const response = await fetch(
-        `${CONFIG.API_BASE}/api/health`,
-        {
-            cache: "no-store"
+        try {
+            details = await response.text();
+        } catch {
+            // Response body unavailable.
         }
-    );
 
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(
+            `HTTP ${response.status}` +
+            (details ? `: ${details.slice(0, 250)}` : "")
+        );
     }
 
     return response.json();
 }
 
-/* ---------- demo ---------- */
-
-function demo(text, selectedMode) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({
-                reply: selectedMode
-                    ? `Demo: ${MODES[selectedMode].label} would run with "${text}".`
-                    : `Demo reply to: ${text}`
-            });
-        }, 900);
-    });
-}
-
-/* ---------- send message ---------- */
+/* ---------- Sending Messages ---------- */
 
 async function send(textOverride, quick = false) {
     const text = (textOverride ?? input.value).trim();
@@ -321,33 +326,25 @@ async function send(textOverride, quick = false) {
 
     const selectedMode = mode;
     const selectedFile = file;
+    const modeConfig = selectedMode ? MODES[selectedMode] : null;
 
-    const requirements = selectedMode
-        ? MODES[selectedMode]?.file
-        : null;
-
-    if (requirements && !selectedFile) {
-        addMessage(
-            "ai",
-            `Attach a ${requirements} file first.`,
-            { error: true }
+    if (!quick && modeConfig?.file && !selectedFile) {
+        showError(
+            `Please attach a ${modeConfig.file} first, then describe the change.`
         );
         return;
     }
 
-    if (
-        requirements &&
-        selectedFile &&
-        !selectedFile.type.startsWith(`${requirements}/`)
-    ) {
-        addMessage(
-            "ai",
-            `This tool needs a ${requirements} file.`,
-            { error: true }
-        );
-        return;
+    if (modeConfig?.file && selectedFile) {
+        const requiredType = modeConfig.file;
+
+        if (!selectedFile.type.startsWith(`${requiredType}/`)) {
+            showError(`This tool needs a ${requiredType} file.`);
+            return;
+        }
     }
 
+    // Display the user's message.
     const userBubble = addMessage(
         "user",
         text || "(file attached)"
@@ -364,6 +361,7 @@ async function send(textOverride, quick = false) {
             previewUrl
         );
 
+        // The preview is not a generated downloadable file.
         userBubble.querySelector(".media a")?.remove();
     }
 
@@ -394,31 +392,36 @@ async function send(textOverride, quick = false) {
     const typing = showTyping();
 
     try {
-        const data = CONFIG.DEMO_MODE
-            ? await demo(text, selectedMode)
-            : await callApi(formData);
+        let data;
+
+        if (CONFIG.DEMO_MODE) {
+            data = await demo(text, selectedMode);
+        } else {
+            data = await callApi(formData);
+        }
 
         typing.remove();
 
-        const replyBubble = addMessage(
+        const responseBubble = addMessage(
             "ai",
-            data.reply || "Nova received an empty response."
+            data.reply || "Nova finished processing your request."
         );
 
         if (data.media) {
             addMedia(
-                replyBubble,
+                responseBubble,
                 data.media.type,
                 data.media.url
             );
         }
     } catch (error) {
+        console.error("Nova API error:", error);
+
         typing.remove();
 
-        addMessage(
-            "ai",
-            `Couldn't reach Nova's server. Please check the backend. (${error.message})`,
-            { error: true }
+        showError(
+            `Nova's request failed: ${error.message}. ` +
+            "Check the Render logs for the /api/chat request."
         );
     } finally {
         busy = false;
@@ -427,7 +430,21 @@ async function send(textOverride, quick = false) {
     }
 }
 
-/* ---------- input behaviour ---------- */
+/* ---------- Demo Mode ---------- */
+
+function demo(text, selectedMode) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({
+                reply: selectedMode
+                    ? `Demo: "${MODES[selectedMode].label}" would run with "${text}".`
+                    : `Demo reply to: ${text}`
+            });
+        }, 900);
+    });
+}
+
+/* ---------- Input Behaviour ---------- */
 
 function autosize() {
     input.style.height = "auto";
@@ -447,7 +464,7 @@ input.addEventListener("keydown", (event) => {
 
 sendBtn.addEventListener("click", () => send());
 
-/* ---------- sidebar ---------- */
+/* ---------- Sidebar ---------- */
 
 const openMenu = () => {
     $("sidebar").classList.add("open");
@@ -473,7 +490,7 @@ $("clearBtn").onclick = () => {
     }
 };
 
-/* ---------- server status ---------- */
+/* ---------- Backend Status ---------- */
 
 async function ping() {
     const dot = $("statusDot");
@@ -486,15 +503,31 @@ async function ping() {
     }
 
     try {
-        await checkHealth();
+        const response = await fetch(
+            `${CONFIG.API_BASE}/api/health`,
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.ok !== true) {
+            throw new Error("Health check did not return ok");
+        }
 
         dot.className = "dot on";
         statusText.textContent = "Connected";
-    } catch {
+    } catch (error) {
+        console.error("Nova health check failed:", error);
+
         dot.className = "dot off";
         statusText.textContent = "Server offline";
     }
 }
 
+// Check immediately, then periodically.
 ping();
 setInterval(ping, 15000);
