@@ -150,15 +150,10 @@ def fail(msg: str) -> dict:
 
 
 def is_time_question(text: str) -> bool:
-    """Recognize common time questions without asking the AI model."""
-    normalized = re.sub(r"[?!.,]+$", "", text.lower().strip())
-    normalized = re.sub(r"\s+", " ", normalized)
+    text = re.sub(r"\s+", " ", text.lower().strip())
+    return bool(re.search(r"\btime\b", text))
 
-    if normalized in TIME_PHRASES:
-        return True
 
-    # Also recognize natural variations such as:
-    # "Hey Nova, can you tell me the time?"
     patterns = [
         r"\bwhat(?:'s| is) the time\b",
         r"\bwhat time is it\b",
