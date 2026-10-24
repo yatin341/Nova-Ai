@@ -16,10 +16,6 @@ const MODES = {
         label: "Generate video",
         ph: "Describe the video you want…"
     },
-    "music": {
-        label: "Generate music",
-        ph: "Describe the music, e.g. calm lo-fi piano…"
-    },
     "edit-image": {
         label: "Edit image",
         ph: "What should change in the photo?",
