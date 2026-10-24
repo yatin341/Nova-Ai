@@ -6,6 +6,8 @@ import requests
 import base64
 from magic_hour import Client
 from dotenv import load_dotenv
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 load_dotenv(override=True)
 
@@ -485,17 +487,21 @@ def proccess(command):
              print("yes tell me your city ")
              weather()
 
+       elif command.lower().strip() in [
+                "time",
+                "what time is it",
+                "what's the time",
+                "what is the time",
+                "current time",
+                "tell me the time",
+                "what time is it right now",
+                "tell me the current time"
+           ]:
+             current_time = datetime.now(
+             ZoneInfo("Asia/Kolkata")
+             ).strftime("%I:%M %p")
 
-       elif command in[
-            "time",
-            "what time is it",
-            "current time",
-            "tell me the time"
-       ]:
-       
-            
-              current_time = time.strftime("%I:%M %p")
-              return(f"The current time is {current_time}") 
+           return f"The current time in India is {current_time}."
 
        elif (
            command.startswith ("generate a photo")
