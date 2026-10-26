@@ -175,11 +175,11 @@ User Command
       ↓
 Command Router
       ↓
- ┌────────────┬────────────┬────────────┬────────────┐
- ↓            ↓            ↓            ↓
-AI Chat     Image AI     Video AI     Music AI
- ↓            ↓            ↓            ↓
-Groq       Cloudflare   Magic Hour   MusicGen
+ ┌────────────┬────────────┬─────────
+ ↓            ↓            ↓            
+AI Chat     Image AI     Video AI     
+ ↓            ↓            ↓            
+Groq       Cloudflare   Magic Hour   
 
 This allows the application to provide multiple AI capabilities through one interface.
 
@@ -192,11 +192,7 @@ Groq Browser Search	Current information and web search
 Cloudflare Workers AI	Image generation and editing
 FLUX 2 Klein 4B	Image generation/editing model
 Magic Hour	AI video generation and editing
-MusicGen Small	Local AI music generation
 Hugging Face Transformers	Loading and running MusicGen
-PyTorch	Machine learning framework
-CUDA	NVIDIA GPU acceleration
-SciPy	Saving generated audio
 Requests	API communication
 python-dotenv	Environment variable management
 JSON	Conversation history storage
@@ -227,15 +223,8 @@ Nova AI combines several AI services into one Python application.
              ↓                    ↓                      ↓
        GPT-OSS-20B          FLUX 2 Klein          AI Video
                                                        
-                         ┌─────────────────┐
-                         │   Music AI      │
-                         └────────┬────────┘
-                                  │
-                                  ↓
-                              MusicGen
-                                  │
-                                  ↓
-                           PyTorch + CUDA
+                      
+                        
 🔄 AI Processing Flow
 💬 Chat Processing
 User
@@ -317,18 +306,8 @@ Nova AI
 Magic Hour
  ↓
 Edited Video
-🎵 Music Generation
-Music Prompt
  ↓
 Nova AI
- ↓
-MusicGen Small
- ↓
-PyTorch
- ↓
-CUDA / CPU
- ↓
-Generated Audio
  ↓
 generated_music.wav
 📁 Project Structure
