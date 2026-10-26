@@ -309,7 +309,6 @@ Edited Video
  ↓
 Nova AI
  ↓
-generated_music.wav
 📁 Project Structure
 Nova-AI/
 │
@@ -320,7 +319,6 @@ Nova-AI/
 │
 ├── generated_image.png
 ├── edited_image.png
-├── generated_music.wav
 │
 └── venv/
 Important
@@ -332,7 +330,7 @@ venv/
 history.json
 generated_image.png
 edited_image.png
-generated_music.wav
+
 
 Add them to .gitignore.
 
@@ -345,7 +343,6 @@ __pycache__/
 history.json
 generated_image.png
 edited_image.png
-generated_music.wav
 ⚙️ Installation
 1. Clone the Repository
 git clone YOUR_GITHUB_REPOSITORY_URL
@@ -466,25 +463,9 @@ automation, data science, AI and machine learning...
 The application also writes conversation information to:
 
 history.json
-⚡ Local AI Music Generation
 
-One of the main features of Nova AI is that music generation can run locally.
 
 The project uses:
-
-facebook/musicgen-small
-
-The model is loaded through Hugging Face Transformers.
-
-If CUDA is available:
-
-MusicGen → NVIDIA GPU
-
-Otherwise:
-
-MusicGen → CPU
-
-This makes the music-generation component different from the cloud-based image and video features.
 
 ☁️ Cloud AI Services
 
@@ -528,7 +509,6 @@ __pycache__/
 history.json
 generated_image.png
 edited_image.png
-generated_music.wav
 
 Never commit:
 
@@ -548,10 +528,6 @@ Cloudflare Workers AI requires an API key and account configuration.
 Magic Hour requires an API key and available credits.
 Video generation depends on the Magic Hour service.
 Image generation depends on Cloudflare availability.
-Music generation requires significant local computing resources.
-GPU acceleration requires a compatible NVIDIA/CUDA setup.
-CPU music generation can be considerably slower.
-Generated media can require significant disk space.
 The application currently runs primarily through the command line.
 Conversation history is stored locally.
 API services may have rate limits or usage limits.
@@ -581,7 +557,6 @@ Persistent context across sessions
 🤖 More AI Models
 More image models
 More video models
-More music models
 Local LLM support
 AI document processing
 ⚡ Performance
@@ -609,7 +584,6 @@ Image editing
 Video generation
 Video editing
 Image animation
-Music generation
 Weather
 Time
 
@@ -629,12 +603,8 @@ Image generation
 Image editing
 Video generation
 Video processing workflows
-AI music generation
 Local AI model deployment
-GPU acceleration
-CUDA
 Hugging Face Transformers
-PyTorch
 Environment variables
 JSON data storage
 Command routing
@@ -648,9 +618,6 @@ Nova AI combines multiple AI capabilities into a single project.
 
 The project combines cloud APIs with locally running AI models.
 
-🎵 Local Music Generation
-
-MusicGen runs locally and can take advantage of an NVIDIA GPU.
 
 🖼️ Generative Images
 
@@ -676,7 +643,6 @@ The assistant maintains conversation context during the current session.
 🟢 Video Generation        Working
 🟢 Image Animation         Working
 🟢 Video Editing           Working
-🟢 Music Generation        Working
 🟢 Weather                 Working
 🟢 Time                    Working
 🟢 Conversation History    Working
@@ -729,6 +695,6 @@ Check the respective provider's documentation before using the project commercia
 
 One assistant. Multiple AI capabilities.
 
-Chat • Search • Images • Video • Music • Weather • AI
+Chat • Search • Images • Video • Weather • AI
 
-Built with Python, AI APIs, PyTorch, and local AI models.
+Built with Python, AI APIs, and local AI models.
