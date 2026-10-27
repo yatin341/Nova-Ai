@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 import main
 
 
-# ---------- paths ----------
+
 BASE = Path(__file__).parent
 OUT = BASE / "outputs"
 UPLOADS = BASE / "uploads"
@@ -25,7 +25,6 @@ OUT.mkdir(exist_ok=True)
 UPLOADS.mkdir(exist_ok=True)
 
 
-# ---------- app ----------
 app = FastAPI()
 
 app.add_middleware(
@@ -59,7 +58,7 @@ TIME_PHRASES = {
 }
 
 
-# ---------- helpers ----------
+
 def save_upload(f: UploadFile) -> str:
     ext = Path(f.filename or "").suffix.lower()
 
@@ -174,7 +173,7 @@ def get_indian_time() -> str:
     ).strftime("%I:%M %p")
 
 
-# ---------- routes ----------
+
 @app.get("/api/health")
 def health():
     return {"ok": True}
@@ -364,7 +363,7 @@ def chat(
         )
 
 
-# ---------- static files ----------
+
 app.mount("/files", StaticFiles(directory=OUT), name="files")
 
 # Mount frontend last so it doesn't intercept API routes.
