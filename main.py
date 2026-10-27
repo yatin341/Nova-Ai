@@ -560,7 +560,6 @@ def proccess(command):
         print(output)
 
 
-# ------------------------------------frontend-------------------------------
 
 if __name__ == "__main__":
     while True:
