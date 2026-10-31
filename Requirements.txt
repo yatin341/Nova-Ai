@@ -3,5 +3,7 @@ uvicorn
 python-multipart
 groq
 requests
-python-dotenv
 magic-hour
+python-dotenv
+scipy
+accelerate
